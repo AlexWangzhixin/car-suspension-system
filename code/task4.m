@@ -1,8 +1,7 @@
 % Task 4: Full Axle Suspension System Simulation with Road Profile
-% Author: Your Name
-% Date: Today's Date
 % Purpose: Simulate full axle suspension system with realistic road profile
 % and calculate RMSE and MAE for traction and stability analysis
+% Corrected: Using 3-DOF model parameters and optimized Sports Mode
 
 clear all;
 close all;
@@ -25,49 +24,70 @@ disp(['Sample rate: ', num2str(1/(time(2)-time(1))), ' Hz']);
 % Prompt user for mode selection
 disp('\nPlease select the mode:');
 disp('1. Cruise Mode');
-disp('2. Sports Mode');
+disp('2. Sports Mode (Optimized)');
 mode = input('Enter your choice (1 or 2): ');
 
-% Assign parameters based on mode
+% ==========================================
+% 1. 定义物理参数 (根据 Engineering Spec Notes)
+% ==========================================
+% 质量 (Masses)
+% M3: Driver's seat and fixings (including driver)
+M3 = 100; % kg
+% M2: Vehicle chassis (Sprung mass relative to suspension)
+M2 = 250; % kg
+% M1: Wheels, axles etc. (Unsprung mass)
+M1 = 50;  % kg
+
+% 座椅参数 (Seat Parameters)
+% K1: Driver's seat stiffness
+K1 = 2200; % N/m
+% C1: Driver's seat damping
+C1 = 700;  % Ns/m
+% C3: Driver's seat back friction (Viscous equivalent)
+C_seat_fric = 300 ;
+C1_total = C1 + C_seat_fric; % 总座椅阻尼
+
+% 轮胎参数 (Tyre Parameters)
+% K3: Wheel-Tyre stiffness
+K3 = 120000; % N/m
+% C_tyre: 通常忽略或很小，题目未给，可设为0或小值
+C_tyre = 0 ;
+
+% 悬挂参数 (Suspension Parameters) - 取决于模式
 if mode == 1
-    % Cruise Mode Parameters
-    M1 = 250;     % Sprung mass (kg) - chassis + driver
-    M2 = 50;      % Unsprung mass (kg) - wheel + suspension components
-    K1 = 10000;   % Spring stiffness (N/m) - suspension spring
-    K2 = 200000;  % Spring stiffness (N/m) - tire stiffness
-    C1 = 1500;    % Damping coefficient (Ns/m) - suspension damper
-    C2 = 2000;    % Damping coefficient (Ns/m) - tire damping
-    % Task 2: Add bump-stops to limit relative displacement between wheel and chassis to +/- 2cm
-    bump_stop_limit = 0.02;  % 2cm limit
+    % Cruise Mode (Standard)
+    K2 = 8000;   % N/m
+    C2 = 900;    % Ns/m
     mode_name = 'Cruise Mode';
 elseif mode == 2
-    % Sports Mode Parameters
-    M1 = 250;     % Sprung mass (kg) - chassis + driver
-    M2 = 50;      % Unsprung mass (kg) - wheel + suspension components
-    K1 = 20000;   % Spring stiffness (N/m) - suspension spring (stiffer for sports)
-    K2 = 250000;  % Spring stiffness (N/m) - tire stiffness (stiffer for sports)
-    C1 = 3000;    % Damping coefficient (Ns/m) - suspension damper (higher for sports)
-    C2 = 2500;    % Damping coefficient (Ns/m) - tire damping (higher for sports)
-    % Task 2: Add bump-stops to limit relative displacement between wheel and chassis to +/- 2cm
-    bump_stop_limit = 0.02;  % 2cm limit
-    mode_name = 'Sports Mode';
+    % Sports Mode (OPTIMIZED from Task 3)
+    % 题目 Task 4 要求验证 "Proposed Design"
+    K2 = 30000;  % 来自 Task 3 的推荐值
+    C2 = 3000;   % 来自 Task 3 的推荐值
+    mode_name = 'Sports Mode (Optimized)';
 else
-    error('Invalid mode selection. Please run the script again and select 1 or 2.');
+    error('Invalid selection');
 end
+
+% Task 2: Add bump-stops to limit relative displacement between wheel and chassis to +/- 2cm
+bump_stop_limit = 0.02;  % 2cm limit
 
 % Display selected mode and parameters
 disp(['\nSelected Mode: ', mode_name]);
 disp('Parameters:');
-disp(['M1 (Sprung mass): ', num2str(M1), ' kg']);
-disp(['M2 (Unsprung mass): ', num2str(M2), ' kg']);
-disp(['K1 (Suspension spring): ', num2str(K1), ' N/m']);
-disp(['K2 (Tire stiffness): ', num2str(K2), ' N/m']);
-disp(['C1 (Suspension damper): ', num2str(C1), ' Ns/m']);
-disp(['C2 (Tire damping): ', num2str(C2), ' Ns/m']);
+disp(['M1 (Unsprung mass - Wheels): ', num2str(M1), ' kg']);
+disp(['M2 (Sprung mass - Chassis): ', num2str(M2), ' kg']);
+disp(['M3 (Driver + Seat mass): ', num2str(M3), ' kg']);
+disp(['K1 (Seat stiffness): ', num2str(K1), ' N/m']);
+disp(['K2 (Suspension stiffness): ', num2str(K2), ' N/m']);
+disp(['K3 (Tire stiffness): ', num2str(K3), ' N/m']);
+disp(['C1 (Seat damping total): ', num2str(C1_total), ' Ns/m']);
+disp(['C2 (Suspension damping): ', num2str(C2), ' Ns/m']);
+disp(['C_tyre (Tire damping): ', num2str(C_tyre), ' Ns/m']);
 disp(['Bump-stop limit: +/-', num2str(bump_stop_limit*100), ' cm']);
 
 % Save parameters to workspace for Simulink
-save('axle_params.mat', 'M1', 'M2', 'K1', 'K2', 'C1', 'C2', 'bump_stop_limit', 'roadLeft', 'roadRight', 'time');
+save('axle_params.mat', 'M1', 'M2', 'M3', 'K1', 'K2', 'K3', 'C1_total', 'C2', 'C_tyre', 'bump_stop_limit', 'roadLeft', 'roadRight', 'time');
 
 % Run Simulink model
 disp('\nRunning Simulink model...');
