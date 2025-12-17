@@ -1,0 +1,5 @@
+{
+    "python.defaultInterpreterPath": "python",
+    "python.analysis.enabled": false,
+    "python.languageServer": "None"
+}

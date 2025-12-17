@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SimulinkModel version="1.6" blocks="25" lines="30">
+  <!-- Inputs -->
+  <Block type="FromWorkspace" name="RoadLeft" x="100" y="200" variable="roadLeft" sample_time="1"/>
+  <Block type="FromWorkspace" name="RoadRight" x="100" y="500" variable="roadRight" sample_time="1"/>
+  
+  <!-- Left Wheel Suspension System -->
+  <Block type="Sum" name="SumLeft1" x="300" y="250" inputs="3" signs="+--"/>
+  <Block type="Gain" name="GainLeft1" x="450" y="250" gain="1/M2"/>
+  <Block type="Integrator" name="IntLeft1" x="600" y="250"/>
+  <Block type="Integrator" name="IntLeft2" x="750" y="250"/>
+  <Block type="Outport" name="WheelLeft" x="900" y="250" port="1"/>
+  <Block type="Sum" name="SumLeft2" x="300" y="350" inputs="4" signs="+--+"/>
+  <Block type="Gain" name="GainLeft2" x="450" y="350" gain="1/(M1/2)"/>
+  <Block type="Integrator" name="IntLeft3" x="600" y="350"/>
+  <Block type="Integrator" name="IntLeft4" x="750" y="350"/>
+  
+  <!-- Right Wheel Suspension System -->
+  <Block type="Sum" name="SumRight1" x="300" y="550" inputs="3" signs="+--"/>
+  <Block type="Gain" name="GainRight1" x="450" y="550" gain="1/M2"/>
+  <Block type="Integrator" name="IntRight1" x="600" y="550"/>
+  <Block type="Integrator" name="IntRight2" x="750" y="550"/>
+  <Block type="Outport" name="WheelRight" x="900" y="550" port="1"/>
+  <Block type="Sum" name="SumRight2" x="300" y="650" inputs="4" signs="+--+"/>
+  <Block type="Gain" name="GainRight2" x="450" y="650" gain="1/(M1/2)"/>
+  <Block type="Integrator" name="IntRight3" x="600" y="650"/>
+  <Block type="Integrator" name="IntRight4" x="750" y="650"/>
+  
+  <!-- Chassis Combination -->
+  <Block type="Sum" name="SumChassis" x="900" y="450" inputs="2" signs="++"/>
+  <Block type="Gain" name="GainChassis" x="1050" y="450" gain="0.5"/>
+  <Block type="Outport" name="Chassis" x="1200" y="450" port="1"/>
+  
+  <!-- Bump-Stop Implementation -->
+  <Block type="Saturation" name="SaturationLeft" x="200" y="280" lower_limit="-bump_stop_limit" upper_limit="bump_stop_limit"/>
+  <Block type="Saturation" name="SaturationRight" x="200" y="580" lower_limit="-bump_stop_limit" upper_limit="bump_stop_limit"/>
+  
+  <!-- Derivative Blocks -->
+  <Block type="Derivative" name="DerivLeft" x="200" y="180"/>
+  <Block type="Derivative" name="DerivRight" x="200" y="480"/>
+  
+  <!-- Gain Blocks for Forces -->
+  <Block type="Gain" name="GainK1Left" x="200" y="320" gain="K1"/>
+  <Block type="Gain" name="GainC1Left" x="200" y="360" gain="C1"/>
+  <Block type="Gain" name="GainK2Left" x="200" y="210" gain="K2"/>
+  <Block type="Gain" name="GainC2Left" x="200" y="240" gain="C2"/>
+  <Block type="Gain" name="GainK1Right" x="200" y="620" gain="K1"/>
+  <Block type="Gain" name="GainC1Right" x="200" y="660" gain="C1"/>
+  <Block type="Gain" name="GainK2Right" x="200" y="510" gain="K2"/>
+  <Block type="Gain" name="GainC2Right" x="200" y="540" gain="C2"/>
+  
+  <!-- Connections -->
+  <Line from="RoadLeft/1" to="SumLeft1/1"/>
+  <Line from="RoadLeft/1" to="DerivLeft/1"/>
+  <Line from="IntLeft2/1" to="WheelLeft/1"/>
+  <Line from="IntLeft4/1" to="SumChassis/1"/>
+  <Line from="RoadRight/1" to="SumRight1/1"/>
+  <Line from="RoadRight/1" to="DerivRight/1"/>
+  <Line from="IntRight2/1" to="WheelRight/1"/>
+  <Line from="IntRight4/1" to="SumChassis/2"/>
+  <Line from="SumChassis/1" to="GainChassis/1"/>
+  <Line from="GainChassis/1" to="Chassis/1"/>
+  
+  <!-- Left Wheel Internal Connections -->
+  <Line from="SumLeft1/1" to="GainLeft1/1"/>
+  <Line from="GainLeft1/1" to="IntLeft1/1"/>
+  <Line from="IntLeft1/1" to="IntLeft2/1"/>
+  <Line from="SumLeft2/1" to="GainLeft2/1"/>
+  <Line from="GainLeft2/1" to="IntLeft3/1"/>
+  <Line from="IntLeft3/1" to="IntLeft4/1"/>
+  <Line from="DerivLeft/1" to="GainC2Left/1"/>
+  <Line from="IntLeft2/1" to="GainK2Left/1"/>
+  <Line from="IntLeft2/1" to="GainK1Left/1"/>
+  <Line from="IntLeft1/1" to="GainC1Left/1"/>
+  <Line from="IntLeft4/1" to="GainK1Left/2"/>
+  <Line from="IntLeft3/1" to="GainC1Left/2"/>
+  <Line from="GainK2Left/1" to="SumLeft1/2"/>
+  <Line from="GainC2Left/1" to="SumLeft1/3"/>
+  <Line from="SaturationLeft/1" to="GainK1Left/3"/>
+  <Line from="SaturationLeft/1" to="GainC1Left/3"/>
+  <Line from="GainK1Left/1" to="SumLeft2/1"/>
+  <Line from="GainC1Left/1" to="SumLeft2/2"/>
+  
+  <!-- Right Wheel Internal Connections -->
+  <Line from="SumRight1/1" to="GainRight1/1"/>
+  <Line from="GainRight1/1" to="IntRight1/1"/>
+  <Line from="IntRight1/1" to="IntRight2/1"/>
+  <Line from="SumRight2/1" to="GainRight2/1"/>
+  <Line from="GainRight2/1" to="IntRight3/1"/>
+  <Line from="IntRight3/1" to="IntRight4/1"/>
+  <Line from="DerivRight/1" to="GainC2Right/1"/>
+  <Line from="IntRight2/1" to="GainK2Right/1"/>
+  <Line from="IntRight2/1" to="GainK1Right/1"/>
+  <Line from="IntRight1/1" to="GainC1Right/1"/>
+  <Line from="IntRight4/1" to="GainK1Right/2"/>
+  <Line from="IntRight3/1" to="GainC1Right/2"/>
+  <Line from="GainK2Right/1" to="SumRight1/2"/>
+  <Line from="GainC2Right/1" to="SumRight1/3"/>
+  <Line from="SaturationRight/1" to="GainK1Right/3"/>
+  <Line from="SaturationRight/1" to="GainC1Right/3"/>
+  <Line from="GainK1Right/1" to="SumRight2/1"/>
+  <Line from="GainC1Right/1" to="SumRight2/2"/>
+  
+  <!-- Configuration -->
+  <Configuration stop_time="90" solver="ode45" sample_time="1"/>
+  <DataExport signals="WheelLeft,WheelRight,Chassis" variables="time,wheelLeft,wheelRight,chassis"/>
+</SimulinkModel>

@@ -1,0 +1,99 @@
+% Task 4 Simulink Model Description (task4sim.slx)
+% Author: Your Name
+% Date: Today's Date
+% Purpose: Description of the Simulink model for Task 4
+
+%% Model Overview
+% This Simulink model simulates a full axle suspension system with two independent quarter-car
+% suspension systems (left and right wheels) sharing a common chassis mass. The model includes
+% bump-stops to limit the relative displacement between wheel and chassis to +/- 2cm (as specified in Task 2).
+
+%% Model Structure
+% The model consists of the following main components:
+% 1. Left Wheel Suspension System
+% 2. Right Wheel Suspension System  
+% 3. Shared Chassis Mass
+% 4. Road Profile Inputs (Left and Right)
+% 5. Output Measurement Points
+
+%% Inputs
+% - roadLeft: Left wheel road profile from roadProfile.mat
+% - roadRight: Right wheel road profile from roadProfile.mat
+% - Parameters from workspace: M1, M2, K1, K2, C1, C2, bump_stop_limit
+
+%% Outputs
+% - wheelLeft: Left wheel position
+% - wheelRight: Right wheel position
+% - chassis: Chassis position
+
+%% Component Details
+
+% 1. Left Wheel Suspension System
+%   - Spring-Damper System with K1 and C1
+%   - Tire Model with K2 and C2
+%   - Bump-Stop Saturation Block (limits relative displacement to +/- bump_stop_limit)
+%   - Two Integrators (for velocity and position)
+%   - Force Balance Equations
+
+% 2. Right Wheel Suspension System
+%   - Identical to Left Wheel Suspension System
+%   - Independent dynamics but shares chassis mass
+
+% 3. Shared Chassis Mass
+%   - Integrates forces from both suspension systems
+%   - Uses total sprung mass M1
+%   - Two Integrators (for velocity and position)
+
+% 4. Bump-Stop Implementation
+%   - Saturation Block with Lower Limit = -bump_stop_limit
+%   - Saturation Block with Upper Limit = +bump_stop_limit
+%   - Placed in the feedback loop between wheel and chassis displacement
+
+%% Model Diagram (Textual Representation)
+% [roadLeft] --> [Sum] --+--> [Saturation] --> [Gain K1] --> [Sum] --> [Gain 1/M1] --> [Integrator] --> [Integrator] --> [chassis]
+%                        |                      |
+%                        +--> [Derivative] --> [Gain C1] --> [Sum] --+
+%                        |
+%                        +--> [Gain K2] --> [Sum] --> [Gain 1/M2] --> [Integrator] --> [Integrator] --> [wheelLeft]
+%                        |                      |
+%                        +--> [Derivative] --> [Gain C2] --> [Sum] --+
+%
+% [roadRight] --> [Sum] --+--> [Saturation] --> [Gain K1] --> [Sum] --> [Gain 1/M1] --> [Integrator] --> [Integrator] --> [chassis]
+%                        |                      |
+%                        +--> [Derivative] --> [Gain C1] --> [Sum] --+
+%                        |
+%                        +--> [Gain K2] --> [Sum] --> [Gain 1/M2] --> [Integrator] --> [Integrator] --> [wheelRight]
+%                        |                      |
+%                        +--> [Derivative] --> [Gain C2] --> [Sum] --+
+
+%% Key Equations Implemented
+% 1. Chassis Dynamics:
+%    M1 * d²x/dt² = -K1*(x - x_wheel) - C1*(dx/dt - dx_wheel/dt)
+%    (where x is chassis position, x_wheel is wheel position)
+
+% 2. Wheel Dynamics:
+%    M2 * d²x_wheel/dt² = K1*(x - x_wheel) + C1*(dx/dt - dx_wheel/dt) - K2*(x_wheel - r) - C2*(dx_wheel/dt - dr/dt)
+%    (where r is road profile, x_wheel is wheel position, x is chassis position)
+
+% 3. Bump-Stop Constraint:
+%    |x - x_wheel| ≤ bump_stop_limit
+%    (implemented using Saturation block)
+
+%% Simulation Settings
+% - Solver: ode45 (Dormand-Prince)
+% - Stop Time: Duration of road profile (90 seconds)
+% - Sample Time: Same as road profile (1 second)
+% - Data Import/Export: Save outputs to workspace
+
+%% How to Use This Model
+% 1. Ensure roadProfile.mat is in the current directory
+% 2. Run task4.m to set up parameters and start simulation
+% 3. The model will load parameters from the workspace
+% 4. Simulation results will be saved to the workspace for analysis in task4.m
+
+%% Additional Notes
+% - The model uses the same parameter values for both left and right suspension systems
+% - The chassis position is the average response from both suspension systems
+% - Bump-stops are implemented as hard limits using the Saturation block
+% - Derivatives are calculated using the Derivative block with appropriate filtering
+% - The model is designed to be compatible with the MATLAB script task4.m
