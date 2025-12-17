@@ -15,27 +15,15 @@ mode = input('Enter your choice (1 or 2): ');
 % ==========================================
 % 质量 (Masses)
 % M3: Driver's seat and fixings (including driver)
-M3 = 100; % kg
-% M2: Vehicle chassis (Sprung mass relative to suspension)
-M2 = 250; % kg
-% M1: Wheels, axles etc. (Unsprung mass)
-M1 = 50;  % kg
+M1=60;      % in kg, wheels-axles etc. (for quarter car)
+M2=250;     % in kg, chassis (for quarter car)
+M3=100;      % in kg, seat and driver (for quarter car)
 
-% 座椅参数 (Seat Parameters)
-% K1: Driver's seat stiffness
-K1 = 2200; % N/m
-% C1: Driver's seat damping
-C1 = 700;  % Ns/m
-% C3: Driver's seat back friction (Viscous equivalent)
-% 注意：题目给出 C3=300 Ns/m。通常作为并联阻尼处理。
-C_seat_fric = 300; 
-C1_total = C1 + C_seat_fric; % 总座椅阻尼用于仿真
-
-% 轮胎参数 (Tyre Parameters)
-% K3: Wheel-Tyre stiffness
-K3 = 120000; % N/m
-% C_tyre: 题目未给，通常设为0
-C3_tyre = 0; 
+K1=2000;    % N/m, spring coefficient
+K3=100000;  % N/m, spring coefficient
+ 
+C1=800;     % Ns/m, damping coefficient
+C3=200;     % Ns/m, damping coefficient
 
 % 悬挂参数 (Suspension Parameters) - 取决于模式
 if mode == 1
@@ -44,7 +32,7 @@ if mode == 1
     C2 = 900;    % Ns/m
     mode_name = 'Cruise Mode';
 elseif mode == 2
-    % Sports Mode (Base) - 这是Task 1要求的原始Sports Mode
+    % Sports Mode (Base) 
     K2 = 13000;  % N/m
     C2 = 1500;   % Ns/m
     mode_name = 'Sports Mode';
@@ -62,7 +50,7 @@ save('suspension_params.mat');
 disp(['Running Simulink model for ', mode_name, '...']);
 % 确保 task1sim.slx 是一个包含 M3 (座椅) 的 3-DOF 模型
 try
-    sim('task1sim.slx'); 
+    sim('car_suspension_absolutedisplacements.slx'); 
 catch ME
     error(['Simulink 运行失败: ' ME.message]);
 end
@@ -70,11 +58,12 @@ end
 % ==========================================
 % 3. 结果分析 (Step Response)
 % ==========================================
-% 假设 Simulink 输出的座椅位置变量名为 y_seat (或 x3)，时间为 tout
-% 你需要在 Simulink 中添加 To Workspace 模块导出这些数据
-if ~exist('y_seat', 'var')
-    error('Simulink 模型未输出 y_seat 变量。请在模型中添加 To Workspace 模块，变量名为 y_seat。');
-end
+data_matrix = output.Data;
+time_vector = output.Time;
+
+% 假设第4列是座椅绝对位移 (y_seat = r+x+y+z)
+y_seat = data_matrix(:, 4);  % 提取第4列作为座椅位移
+tout = time_vector;          % 时间向量
 
 % 计算性能指标 (针对 0.1m 的阶跃输入)
 step_amplitude = 0.1;
