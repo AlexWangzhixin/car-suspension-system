@@ -32,9 +32,9 @@ mode = input('Enter your choice (1 or 2): ');
 % ==========================================
 
 % 参数定义 (基础参数同 Task 1)
-M1=60;      % in kg, wheels-axles etc. (for quarter car)
-M2=250;     % in kg, chassis (for quarter car)
-M3=100;      % in kg, seat and driver (for quarter car)
+M1=2*60;      % in kg, wheels-axles etc. (for quarter car)
+M2=2*250;     % in kg, chassis (for quarter car)
+M3=2*100;      % in kg, seat and driver (for quarter car)
 
 K1=2000;    % N/m, spring coefficient
 K3=100000;  % N/m, spring coefficient
@@ -58,6 +58,24 @@ elseif mode == 2
 else
     error('Invalid selection');
 end
+
+% % 确保时间列是列向量
+% if size(sampledTime, 1) < size(sampledTime, 2)
+%     sampledTime = sampledTime';
+% end
+% if size(roadprofileL, 1) < size(roadprofileL, 2)
+%     roadprofileL = roadprofileL';
+% end
+% if size(roadprofileR, 1) < size(roadprofileR, 2)
+%     roadprofileR = roadprofileR';
+% end
+
+% 创建 Simulink 需要的输入矩阵 [Time, Data]
+sim_input_left = [sampledTime, roadprofileL];
+sim_input_right = [sampledTime, roadprofileR];
+
+% 在 Simulink 的 From Workspace 模块中，
+% Data 参数分别填 sim_input_left 和 sim_input_right
 
 save('axle_params.mat');
 
