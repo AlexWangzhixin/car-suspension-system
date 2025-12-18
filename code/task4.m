@@ -12,14 +12,14 @@ disp('Loading road profile data...');
 load('roadProfile.mat');
 
 % Check if road profile data is loaded correctly
-if ~exist('roadLeft', 'var') || ~exist('roadRight', 'var') || ~exist('time', 'var')
-    error('Road profile data not found. Please ensure roadProfile.mat is in the current directory.');
-end
+% if ~exist('roadLeft', 'var') || ~exist('roadRight', 'var') || ~exist('time', 'var')
+%     error('Road profile data not found. Please ensure roadProfile.mat is in the current directory.');
+% end
 
 % Display road profile information
-disp(['Road profile duration: ', num2str(max(time)), ' seconds']);
-disp(['Number of samples: ', num2str(length(time))]);
-disp(['Sample rate: ', num2str(1/(time(2)-time(1))), ' Hz']);
+disp(['Road profile duration: ', num2str(max(sampledTime)), ' seconds']);
+disp(['Number of samples: ', num2str(length(sampledTime))]);
+disp(['Sample rate: ', num2str(1/(sampledTime(2)-sampledTime(1))), ' Hz']);
 
 % Prompt user for mode selection
 disp('\nPlease select the mode:');
@@ -32,16 +32,21 @@ mode = input('Enter your choice (1 or 2): ');
 % ==========================================
 
 % 参数定义 (基础参数同 Task 1)
-M3=100; M2=250; M1=50; 
-K1=2200; C1_total=1000; % C1+C3
-K3=120000; C3_tyre=0;
+M1=60;      % in kg, wheels-axles etc. (for quarter car)
+M2=250;     % in kg, chassis (for quarter car)
+M3=100;      % in kg, seat and driver (for quarter car)
 
-% Bump Stop Limit (Task 2 要求)
-bump_stop_limit = 0.02;
+K1=2000;    % N/m, spring coefficient
+K3=100000;  % N/m, spring coefficient
+ 
+C1=800;     % Ns/m, damping coefficient
+C3=200;     % Ns/m, damping coefficient
+
 
 if mode == 1
     % Cruise Mode
-    K2 = 8000; C2 = 900;
+    K2 = 8000; 
+    C2 = 900;
     mode_name = 'Cruise Mode';
 elseif mode == 2
     % Sports Mode (OPTIMIZED)
@@ -58,6 +63,6 @@ save('axle_params.mat');
 
 % 运行 Task 4 全桥模型 (需包含左轮和右轮两套系统)
 disp(['Running Task 4 simulation for ', mode_name, '...']);
-sim('task4sim.slx');
+sim('car_suspension_absolutedisplacements_WholeAxle.slx');
 
 % ... (保留原有的 RMSE 和 MAE 计算代码，只要变量名匹配即可) ...
